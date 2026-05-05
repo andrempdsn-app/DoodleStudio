@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { X, Check, Star, Zap } from 'lucide-react';
+import { X, Check, Star, Zap, Heart } from 'lucide-react';
 
 interface PricingModalProps {
   onClose: () => void;

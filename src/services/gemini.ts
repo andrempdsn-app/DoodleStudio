@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
@@ -9,6 +9,46 @@ export type DrawingStyle =
   | "educational-worksheet"
   | "thick-outline"
   | "advanced-detailed";
+
+export async function brainstormIdeas(): Promise<string[]> {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: "Generate 5 fun, creative, and specific drawing ideas for kids. Each idea should be a short phrase (max 5-7 words). Think of animals, space, mythology, or everyday magic. Return as a clean JSON array of strings.",
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING }
+        }
+      }
+    });
+
+    const text = response.text || "[]";
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Brainstorm failed:", error);
+    return [
+      "A dinosaur with a jetpack",
+      "An octopus eating ice cream",
+      "A castle made of marshmallows",
+      "A cat riding a flying carpet",
+      "A robot garden of metallic flowers"
+    ];
+  }
+}
+
+export async function refinePrompt(prompt: string): Promise<string> {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Take this simple drawing prompt: "${prompt}". Expand it into a more descriptive, fun, and artistic scene suitable for a child's coloring book or cartoon. Make it imaginative but keep the core subject clear. Maximum 15 words.`,
+    });
+    return response.text || prompt;
+  } catch (error) {
+    return prompt;
+  }
+}
 
 export async function generateDrawing(prompt: string, style: DrawingStyle) {
   let styleInstruction = "";
